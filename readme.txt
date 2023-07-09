@@ -12,5 +12,5 @@ TL;DR:
 This addon will prevent your weapons from getting sheathed or unsheathed, whichever you prefer.
 Also provides a hotkey to switch the two modes.
 
-Version 1.0.0 - July 10, 2023
+Version 1.0.0 - July 9, 2023
 Initial version.
