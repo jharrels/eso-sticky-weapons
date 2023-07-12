@@ -2,7 +2,7 @@
 ## Description: When out of combat, toggles the weapon to be sheathed. 
 ## APIVersion: 101038 101037
 ## Author: |cFEF7DCNo|cFDE281ro|cFCCB1Amd|cB08A03ro|c342B09l|r
-## Version: 1.0.0
+## Version: 1.1.0
 ## AddOnVersion: 10023
 ## DependsOn: LibAddonMenu-2.0>=32
 ## SavedVariables: StickyWeaponsSavedVars

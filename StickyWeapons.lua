@@ -10,7 +10,7 @@ local InventoryScene = SCENE_MANAGER.scenes.inventory
 -- =================================================================================
 if stickyWeapons == nil then stickyWeapons = {} end
 stickyWeapons.name = "StickyWeapons"
-stickyWeapons.version = "1.0.0"
+stickyWeapons.version = "1.1.0"
 stickyWeapons.displayName = "Sticky Weapons"
 stickyWeapons.settings = {}                          
 stickyWeapons.addonInitialized = false
@@ -18,40 +18,49 @@ stickyWeapons.defaults = {
 	timeToWaitBeforeSheathing = 4,
 	sheatheState = "unsheathed",
 	enteringCombat = "do nothing",
-	forcedState = "sheathed"
+	forcedState = "sheathed",
+	chatMessages = false
 }
 
 -- =================================================================================
--- FUNCTION: INITIALIZE(event, addon)
+-- FUNCTION: Initialize
 -- This essentially sets everything up and gets it going.
 -- =================================================================================
 function stickyWeapons.Initialize(event, addon)
 	if addon ~= stickyWeapons.name then return end
 	stickyWeapons.addonInitialized = true
 	em:UnregisterForEvent("StickyWeaponsInitialize", EVENT_ADD_ON_LOADED)
-	stickyWeapons.settings = ZO_SavedVars:New("StickyWeaponsSavedVars", 1, nil, stickyWeapons.defaults)
+	stickyWeapons.settings = ZO_SavedVars:NewCharacterIdSettings("StickyWeaponsSavedVars", 1, nil, stickyWeapons.defaults)
 	ZO_CreateStringId("SI_BINDING_NAME_STICKY_WEAPONS_TOGGLE", "Force Sheathe/Unsheathe")
 	stickyWeapons.MakeMenu()
 	zo_callLater(stickyWeapons.PrintBanner, 1000)
 end
 
 -- =================================================================================
--- FUNCTION: PrintBanner()
+-- FUNCTION: PrintBanner
 -- Prints the initialization text in chat.
 -- =================================================================================
 function stickyWeapons.PrintBanner()
-	df("|c00BBFF%s v%s|r initialized.", stickyWeapons.displayName, stickyWeapons.version)
+	if stickyWeapons.settings.chatMessages then
+		df("|c00BBFF%s v%s|r initialized.", stickyWeapons.displayName, stickyWeapons.version)
+	end
 	stickyWeapons.PrintForcedState()
 end
 
 -- =================================================================================
--- FUNCTION: INITIALIZE(event, addon)
+-- FUNCTION: PrintForcedState
 -- This essentially sets everything up and gets it going.
 -- =================================================================================
 function stickyWeapons.PrintForcedState()
-	df("|c00BBFF%s|r: force weapons |cffffff%s|r", stickyWeapons.displayName, stickyWeapons.settings.forcedState)
+	if stickyWeapons.settings.chatMessages then
+		df("|c00BBFF%s|r: force weapons |cffffff%s|r", stickyWeapons.displayName, stickyWeapons.settings.forcedState)
+	end
 end
 
+-- =================================================================================
+-- FUNCTION: ToggleForceSheatheUnsheathe
+-- This is called by the bindings.xml file whenever the key binding is pressed.
+-- =================================================================================
 function stickyWeapons.ToggleForceSheatheUnsheathe()
 	if stickyWeapons.settings.forcedState == "sheathed" then
 		stickyWeapons.settings.forcedState = "unsheathed"
@@ -63,6 +72,11 @@ function stickyWeapons.ToggleForceSheatheUnsheathe()
 	stickyWeapons.StateChange()
 end
 
+-- =================================================================================
+-- FUNCTION: StateChange
+-- Called whenever an event has occured that requires the weapons to be unsheathed
+-- or sheathed.
+-- =================================================================================
 function stickyWeapons.StateChange(...)
 	if (IsUnitInCombat("player")) then
 		if ArePlayerWeaponsSheathed() then
@@ -80,6 +94,14 @@ function stickyWeapons.StateChange(...)
 	end
 end
 
+-- =================================================================================
+-- FUNCTION: SheatheWeapons
+-- Sheathe weapons, as long as the player isn't in combat. It does this by checking
+-- to see if the player is in combat, because it'd be rude to sheathe your weapon
+-- while in a fight. It also checks to see if the weapon is already sheathed or not
+-- so we don't accidentally draw it if it was already put away, because it's just
+-- a toggle.
+-- =================================================================================
 function stickyWeapons.SheatheWeapons()
 	if stickyWeapons.settings.forcedState == "sheathed" then
 		if not IsUnitInCombat("player") then
@@ -90,9 +112,14 @@ function stickyWeapons.SheatheWeapons()
 	end
 end
 
+-- =================================================================================
+-- FUNCTION: StateChangeMount
+-- Delay unsheathing weapons when getting off of your horse, because the animation
+-- takes a second or so and cancels the toggle.
+-- =================================================================================
 function stickyWeapons.StateChangeMount(_, mounted)
 	if not mounted then
-		zo_callLater(stickyWeapons.StateChange, 2000)	
+		zo_callLater(stickyWeapons.StateChange, 1500)	
 	end
 end
 
@@ -113,8 +140,20 @@ function stickyWeapons.MakeMenu()
 	local optionsData = {
 		{
 			type = "header",
-			name = "State Settings",
+			name = "General Settings",
 		},
+		{
+			type = "checkbox",
+			name = "Show status messages in chat",
+			getFunc = function() return saveData.chatMessages end,
+			setFunc = function(newValue) saveData.chatMessages = newValue end,  
+			tooltip = "Display startup message. Display state messages in chat when toggling state.", 
+			default = stickyWeapons.defaults.chatMessages,
+		},
+		{
+			type = "header",
+			name = "State Settings",
+		},		
 		{
 			type = "dropdown",
 		    name = "Force weapon to be",
@@ -133,15 +172,15 @@ function stickyWeapons.MakeMenu()
         },
 		{
 			type = "slider",
-			name = "When unsheathed, time to wait before sheathing",
+			name = "Time to wait in seconds before sheathing",
 			getFunc = function() return saveData.timeToWaitBeforeSheathing end,
 			setFunc = function(newValue) saveData.timeToWaitBeforeSheathing = newValue end,
 			min = 0,
 			max = 10,
 			step = .5,
 			decimals = 1,
-			tooltip = "Time to wait before sheathing after combat.",
-			default = stickyWeapons.defaults.timeToWaitBeforeSheathing,	--(optional)
+			tooltip = "Time to wait, in seconds, before sheathing after combat.",
+			default = stickyWeapons.defaults.timeToWaitBeforeSheathing
 		},
 	}
 
@@ -165,6 +204,7 @@ em:RegisterForEvent("StickyWeaponsMountTrigger", EVENT_MOUNTED_STATE_CHANGED, st
 em:RegisterForEvent("StickyWeaponsSwimTrigger", EVENT_PLAYER_NOT_SWIMMING, stickyWeapons.StateChange)               -- finished swimming
 em:RegisterForEvent("StickyWeaponsActivatedTrigger", EVENT_PLAYER_ACTIVATED, stickyWeapons.StateChange)             -- player logged in, zoned, etc
 em:RegisterForEvent("StickyWeaponsSkyshardTrigger", EVENT_SKYSHARDS_UPDATED, stickyWeapons.StateChange)             -- skyshard obtained
+em:RegisterForEvent("StickyWeaponsCompanionTrigger", EVENT_COMPANION_ACTIVATED, stickyWeapons.StateChange)             -- skyshard obtained
 
 InventoryScene:RegisterCallback("StateChange", function(oldState, newState) 
 	-- states: hiding, showing, shown, hidden
