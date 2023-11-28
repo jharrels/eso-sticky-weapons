@@ -10,7 +10,7 @@ local InventoryScene = SCENE_MANAGER.scenes.inventory
 -- =================================================================================
 if stickyWeapons == nil then stickyWeapons = {} end
 stickyWeapons.name = "StickyWeapons"
-stickyWeapons.version = "1.1.0"
+stickyWeapons.version = "1.2.0"
 stickyWeapons.displayName = "Sticky Weapons"
 stickyWeapons.settings = {}                          
 stickyWeapons.addonInitialized = false
@@ -90,7 +90,9 @@ function stickyWeapons.StateChange(...)
 			TogglePlayerWield()
 		end
 	else
-		zo_callLater(stickyWeapons.SheatheWeapons, stickyWeapons.settings.timeToWaitBeforeSheathing * 1000)
+		if stickyWeapons.settings.timeToWaitBeforeSheathing ~= nil then
+			zo_callLater(stickyWeapons.SheatheWeapons, stickyWeapons.settings.timeToWaitBeforeSheathing * 1000)
+		end
 	end
 end
 

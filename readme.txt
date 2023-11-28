@@ -12,6 +12,9 @@ TL;DR:
 This addon will prevent your weapons from getting sheathed or unsheathed, whichever you prefer.
 Also provides a hotkey to switch the two modes.
 
+Version 1.1.1 - November 27, 2023
+- Added fix for statechange error when reloading UI.
+
 Version 1.1.0 - July 12, 2023
 - Switched "ZO_SavedVars:New" to "ZO_SavedVars:NewCharacterIdSettings", as it was pointed out the
   former was obsolete.

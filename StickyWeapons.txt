@@ -1,9 +1,9 @@
 ## Title: |c00BBFFSticky Weapons|r
 ## Description: When out of combat, toggles the weapon to be sheathed. 
-## APIVersion: 101038 101037
+## APIVersion: 101040
 ## Author: |cFEF7DCNo|cFDE281ro|cFCCB1Amd|cB08A03ro|c342B09l|r
-## Version: 1.1.0
-## AddOnVersion: 10023
+## Version: 1.2.0
+## AddOnVersion: 120
 ## DependsOn: LibAddonMenu-2.0>=32
 ## SavedVariables: StickyWeaponsSavedVars
 
